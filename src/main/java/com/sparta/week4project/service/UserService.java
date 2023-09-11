@@ -21,6 +21,7 @@ public class UserService {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
 
+
     private final String ADMIN_TOKEN = "AAABnvxRVklrnYxKZ0aHgTBcXukeZygoC";
 
     public void signup(SignupRequestDto requestDto) {
@@ -56,7 +57,7 @@ public class UserService {
             throw new IllegalArgumentException("회원을 찾을 수 없습니다.");
         }
         //JWT 생성, 쿠키 저장, Response 객체에 추가
-        String token = jwtUtil.createToken(user.getUsername());
+        String token = jwtUtil.createToken(user.getUsername(),user.getRole());
         jwtUtil.addJwtToCookie(token,res);
     }
 }

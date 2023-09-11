@@ -14,34 +14,42 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
+import java.util.Comparator;
+
 @RestController
 @RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
-    private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
-    public CommentResponseDto createComment(CommentRequestDto requestDto, String tokenValue) {
+    public CommentResponseDto createComment(CommentRequestDto requestDto, User user) {
 
         Comment comment = new Comment(requestDto);
-        String username = tokenToName(tokenValue);
+        String username = user.getUsername();
         comment.setUsername(username);
 
         Post post = findPost(requestDto.getPostid());
-        User user = findUser(username);
         user.addComment(comment);
         post.addComment(comment);
+        Comparator<Comment> compare = new Comparator<Comment>() {
+            @Override
+            public int compare(Comment a, Comment b) {
+                return b.getCreatedAt().compareTo(a.getCreatedAt());
+            }
+        };
+
+        Collections.sort(post.getCommentList(), compare);
 
         Comment saveComment = commentRepository.save(comment);
 
-        CommentResponseDto postResponseDto = new CommentResponseDto(saveComment);
-        return postResponseDto;
+        CommentResponseDto commentResponseDto = new CommentResponseDto(saveComment);
+        return commentResponseDto;
     }
 
     @Transactional
-    public CommentResponseDto updateComment(Long id, CommentRequestDto requestDto, String tokenValue) {
+    public CommentResponseDto updateComment(Long id, CommentRequestDto requestDto, User user) {
         Comment comment = findComment(id);
-        String username = tokenToName(tokenValue);
+        String username = user.getUsername();
 
         if (username.equals(comment.getUsername())) {
             comment.update(requestDto);
@@ -51,10 +59,9 @@ public class CommentService {
         return new CommentResponseDto(comment);
     }
 
-    public Long deleteComment(Long id, String tokenValue) {
+    public Long deleteComment(Long id, User user) {
         Comment comment = findComment(id);
-        String username = tokenToName(tokenValue);
-        User user = findUser(username);
+        String username = user.getUsername();
         if (username.equals(comment.getUsername())||user.getRole()== UserRoleEnum.ADMIN) {
             commentRepository.delete(comment);
         } else {
@@ -63,12 +70,12 @@ public class CommentService {
         return id;
     }
 
-    private String tokenToName (String tokenValue){
-        String token = jwtUtil.substringToken(tokenValue);
-        if (!jwtUtil.validateToken(token))
-            throw new IllegalArgumentException("토큰이 유효하지 않습니다.");
-        return jwtUtil.getUserInfoFromToken(token).get("sub").toString();
-    }
+//    private String tokenToName (String tokenValue){
+//        String token = jwtUtil.substringToken(tokenValue);
+//        if (!jwtUtil.validateToken(token))
+//            throw new IllegalArgumentException("토큰이 유효하지 않습니다.");
+//        return jwtUtil.getUserInfoFromToken(token).get("sub").toString();
+//    }
 
     private Comment findComment(Long id) {
         return commentRepository.findById(id).orElseThrow(() ->
@@ -81,9 +88,9 @@ public class CommentService {
         );
     }
 
-    private User findUser(String username) {
-        return userRepository.findByUsername(username).orElseThrow(() ->
-                new IllegalArgumentException("유저 정보를 찾을 수 없습니다.")
-        );
-    }
+//    private User findUser(String username) {
+//        return userRepository.findByUsername(username).orElseThrow(() ->
+//                new IllegalArgumentException("유저 정보를 찾을 수 없습니다.")
+//        );
+//    }
 }

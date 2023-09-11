@@ -24,12 +24,12 @@ public class UserController {
         return "{\"msg\" : \"회원가입 성공\",\"statusCode\":200}";
     }
 
-    @PostMapping("/user/login")
-    public String login(@RequestBody LoginRequestDto requestDto,  HttpServletResponse res){
-        userService.login(requestDto,res);
-
-        return "{\"msg\" : \"로그인 성공\",\"statusCode\":200}";
-    }
+//    @PostMapping("/user/login")
+//    public String login(@RequestBody LoginRequestDto requestDto,  HttpServletResponse res){
+//        userService.login(requestDto,res);
+//
+//        return "{\"msg\" : \"로그인 성공\",\"statusCode\":200}";
+//    }
 
     @ExceptionHandler({IllegalArgumentException.class})
     public ResponseEntity<RestApiException> handleException(IllegalArgumentException ex) {

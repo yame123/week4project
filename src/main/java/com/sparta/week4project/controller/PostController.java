@@ -4,10 +4,12 @@ import com.sparta.week4project.dto.PostRequestDto;
 import com.sparta.week4project.dto.PostResponseDto;
 import com.sparta.week4project.exception.RestApiException;
 import com.sparta.week4project.jwt.JwtUtil;
+import com.sparta.week4project.security.UserDetailsImpl;
 import com.sparta.week4project.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,20 +34,20 @@ public class PostController {
     }
 
     @PostMapping("/post")//포스팅 등록
-    public PostResponseDto posting(@RequestBody PostRequestDto postRequestDto, @CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue){
+    public PostResponseDto posting(@RequestBody PostRequestDto postRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails){
 
-        return postService.posting(postRequestDto,tokenValue);
+        return postService.posting(postRequestDto,userDetails.getUser());
     }
     //@CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue
     @PutMapping("/post/{id}")
-    public PostResponseDto updatePost(@PathVariable Long id, @RequestBody PostRequestDto postRequestDto, @CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue){
+    public PostResponseDto updatePost(@PathVariable Long id, @RequestBody PostRequestDto postRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails){
 
-        return postService.updatePost(id,postRequestDto, tokenValue);
+        return postService.updatePost(id,postRequestDto, userDetails.getUser());
     }
 
     @DeleteMapping("/post/{id}")
-    public Long deletePost(@PathVariable Long id,@RequestBody PostRequestDto postRequestDto,@CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue){
-        return postService.deletePost(id, tokenValue);
+    public Long deletePost(@PathVariable Long id,@AuthenticationPrincipal UserDetailsImpl userDetails){
+        return postService.deletePost(id, userDetails.getUser());
     }
 
     @ExceptionHandler({IllegalArgumentException.class})

@@ -26,7 +26,7 @@ public class Post extends Timestamped {
     @Column(name="username",nullable = false)
     private String username;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "post_id") // users 테이블에 food_id 컬럼
     private List<Comment> commentList = new ArrayList<>();
 

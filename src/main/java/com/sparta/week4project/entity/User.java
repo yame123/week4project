@@ -28,11 +28,11 @@ public class User {
     @Enumerated(value = EnumType.STRING)
     private UserRoleEnum role;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id") // users 테이블에 food_id 컬럼
     private List<Post> postList = new ArrayList<>();
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id") // users 테이블에 food_id 컬럼
     private List<Comment> commentList = new ArrayList<>();
 

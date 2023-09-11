@@ -6,10 +6,8 @@ import com.sparta.week4project.entity.Comment;
 import com.sparta.week4project.entity.Post;
 import com.sparta.week4project.entity.User;
 import com.sparta.week4project.entity.UserRoleEnum;
-import com.sparta.week4project.jwt.JwtUtil;
 import com.sparta.week4project.repository.CommentRepository;
 import com.sparta.week4project.repository.PostRepository;
-import com.sparta.week4project.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,23 +18,21 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
-    private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
     private final CommentRepository commentRepository;
 
-    public PostResponseDto posting(PostRequestDto postRequestDto,String tokenValue) {
+    public PostResponseDto posting(PostRequestDto postRequestDto,User user) {
         Post post = new Post(postRequestDto);
-        String username = tokenToName(tokenValue);
-        post.setUsername(username);
-        User user = findUser(username);
+
+        post.setUsername(user.getUsername());
         user.getPostList().add(post);
+
         Post savePost = postRepository.save(post);
         PostResponseDto postResponseDto = new PostResponseDto(savePost);
         return postResponseDto;
     }
 
     public List<PostResponseDto> getPosts() {
-        return postRepository.findAllByOrderByModifiedAtDesc().stream().map(PostResponseDto::new).toList();
+        return postRepository.findAllByOrderByCreatedAtDesc().stream().map(PostResponseDto::new).toList();
     }
 
     public PostResponseDto getOnePost(Long id) {
@@ -45,9 +41,9 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto updatePost(Long id, PostRequestDto postRequestDto, String tokenValue) {
+    public PostResponseDto updatePost(Long id, PostRequestDto postRequestDto, User user) {
         Post post = findPost(id);
-        String username = tokenToName(tokenValue);
+        String username = user.getUsername();
         if (username.equals(post.getUsername())) {
             post.update(postRequestDto);
         } else {
@@ -58,15 +54,12 @@ public class PostService {
 
 
 
-    public Long deletePost(Long id, String tokenValue) {
+    public Long deletePost(Long id, User user) {
         Post post = findPost(id);
-        String username = tokenToName(tokenValue);
+        String username = user.getUsername();
         List<Comment> commentList = post.getCommentList();
-        User user = findUser(username);
         if (username.equals(post.getUsername())||user.getRole()== UserRoleEnum.ADMIN) {
-            for(Comment comment : commentList){
-                commentRepository.delete(comment);
-            }
+            commentRepository.deleteAll(commentList);
             postRepository.delete(post);
         } else {
             throw new IllegalArgumentException("작성자만 삭제할 수 있습니다.");
@@ -80,16 +73,16 @@ public class PostService {
         );
     }
 
-    private User findUser(String username) {
-        return userRepository.findByUsername(username).orElseThrow(() ->
-                new IllegalArgumentException("유저 정보를 찾을 수 없습니다.")
-        );
-    }
-
-    private String tokenToName (String tokenValue){
-        String token = jwtUtil.substringToken(tokenValue);
-        if (!jwtUtil.validateToken(token))
-            throw new IllegalArgumentException("토큰이 유효하지 않습니다.");
-        return jwtUtil.getUserInfoFromToken(token).get("sub").toString();
-    }
+//    private User findUser(String username) {
+//        return userRepository.findByUsername(username).orElseThrow(() ->
+//                new IllegalArgumentException("유저 정보를 찾을 수 없습니다.")
+//        );
+//    }
+//
+//    private String tokenToName (String tokenValue){
+//        String token = jwtUtil.substringToken(tokenValue);
+//        if (!jwtUtil.validateToken(token))
+//            throw new IllegalArgumentException("토큰이 유효하지 않습니다.");
+//        return jwtUtil.getUserInfoFromToken(token).get("sub").toString();
+//    }
 }
