@@ -22,11 +22,13 @@ import java.util.Comparator;
 public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+    private final UserRepository userRepository;
     public CommentResponseDto createComment(CommentRequestDto requestDto, User user) {
 
         Comment comment = new Comment(requestDto);
         String username = user.getUsername();
         comment.setUsername(username);
+        user = findUser(user.getId());
 
         Post post = findPost(requestDto.getPostid());
         user.addComment(comment);
@@ -38,9 +40,9 @@ public class CommentService {
             }
         };
 
+        Comment saveComment = commentRepository.save(comment);
         Collections.sort(post.getCommentList(), compare);
 
-        Comment saveComment = commentRepository.save(comment);
 
         CommentResponseDto commentResponseDto = new CommentResponseDto(saveComment);
         return commentResponseDto;
@@ -88,9 +90,9 @@ public class CommentService {
         );
     }
 
-//    private User findUser(String username) {
-//        return userRepository.findByUsername(username).orElseThrow(() ->
-//                new IllegalArgumentException("유저 정보를 찾을 수 없습니다.")
-//        );
-//    }
+    private User findUser(Long id) {
+        return userRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentException("유저 정보를 찾을 수 없습니다.")
+        );
+    }
 }

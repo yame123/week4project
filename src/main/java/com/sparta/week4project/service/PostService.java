@@ -8,6 +8,7 @@ import com.sparta.week4project.entity.User;
 import com.sparta.week4project.entity.UserRoleEnum;
 import com.sparta.week4project.repository.CommentRepository;
 import com.sparta.week4project.repository.PostRepository;
+import com.sparta.week4project.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,9 +20,12 @@ import java.util.List;
 public class PostService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final UserRepository userRepository;
 
+    @Transactional
     public PostResponseDto posting(PostRequestDto postRequestDto,User user) {
         Post post = new Post(postRequestDto);
+        user = findUser(user.getId());
 
         post.setUsername(user.getUsername());
         user.getPostList().add(post);
@@ -73,11 +77,11 @@ public class PostService {
         );
     }
 
-//    private User findUser(String username) {
-//        return userRepository.findByUsername(username).orElseThrow(() ->
-//                new IllegalArgumentException("유저 정보를 찾을 수 없습니다.")
-//        );
-//    }
+    private User findUser(Long id) {
+        return userRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentException("유저 정보를 찾을 수 없습니다.")
+        );
+    }
 //
 //    private String tokenToName (String tokenValue){
 //        String token = jwtUtil.substringToken(tokenValue);
