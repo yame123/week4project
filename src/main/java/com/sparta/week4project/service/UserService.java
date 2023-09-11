@@ -45,19 +45,19 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void login(LoginRequestDto requestDto, HttpServletResponse res) {
-        String username=requestDto.getUsername();
-        String password=requestDto.getPassword();
-        // 사용자 확인
-        User user=userRepository.findByUsername(username).orElseThrow(
-                () -> new IllegalArgumentException("회원을 찾을 수 없습니다.")
-        );
-        // 비밀번호 확인
-        if(!password.equals(user.getPassword())){
-            throw new IllegalArgumentException("회원을 찾을 수 없습니다.");
-        }
-        //JWT 생성, 쿠키 저장, Response 객체에 추가
-        String token = jwtUtil.createToken(user.getUsername(),user.getRole());
-        jwtUtil.addJwtToCookie(token,res);
-    }
+//    public void login(LoginRequestDto requestDto, HttpServletResponse res) {
+//        String username=requestDto.getUsername();
+//        String password=requestDto.getPassword();
+//        // 사용자 확인
+//        User user=userRepository.findByUsername(username).orElseThrow(
+//                () -> new IllegalArgumentException("회원을 찾을 수 없습니다.")
+//        );
+//        // 비밀번호 확인
+//        if(!password.equals(user.getPassword())){
+//            throw new IllegalArgumentException("회원을 찾을 수 없습니다.");
+//        }
+//        //JWT 생성, 쿠키 저장, Response 객체에 추가
+//        String token = jwtUtil.createToken(user.getUsername(),user.getRole());
+//        jwtUtil.addJwtToCookie(token,res);
+//    }
 }
